@@ -1,0 +1,81 @@
+import numpy as np
+import matplotlib as mlpt
+import matplotlib.pyplot as plt
+import pylab 
+from scipy.optimize import curve_fit
+
+x,y=pylab.loadtxt(r'C:\Users\aministratore\Documents\Università\Secondo anno\Laboratorio 2\Esperienze\8\diodogf1.txt',unpack=True)
+
+V1=4.79*x
+V2=4.79*y
+
+DV1=0.003
+DV2=np.array([0.003]*len(V2))
+
+rd=681
+Drd=7
+
+I=(V1-V2)/rd
+DI=np.sqrt((DV1*V2/rd)**2+(DV2*V1/rd)**2+(Drd*1/(rd**2))**2)
+pylab.figure(1)
+pylab.errorbar(V2,I,DI,DV2,linestyle = '', color = 'black', marker = '.')
+
+pylab.rc('font',size=18)
+pylab.xlabel('$\Delta$V  [mV]')
+pylab.ylabel('I  [mA]')
+pylab.minorticks_on()
+
+vt=26 #mV
+
+def shock(V2, I0, h):
+    return I0*(np.e**(V2/(h*vt))-1)
+
+init=(0.6,2)
+
+xx=np.linspace(min(V2),max(V2),2000)
+#pylab.figure(2)
+#pylab.plot(xx,shock(xx,*init), color='blue')  plot con pars
+
+# set the error
+sigma=DV2
+w=1/sigma**2
+
+# call the minimization routine
+pars,covm=curve_fit(shock,V2,I,init,sigma)
+
+# calculate the chisquare for the best-fit function
+chi2 = ((w*(y-shock(V2,*pars))**2)).sum()
+
+# determine the ndof
+ndof=len(x)-len(init)
+
+# print results on the console
+print('pars:',pars)
+print('covm:\n',covm)
+print ('chi2, ndof:',chi2, ndof)
+pylab.figure(3)
+pylab.subplot(2,1,1)
+# plot the best fit curve
+pylab.plot(xx,shock(xx,*pars), color='red')
+pylab.errorbar(V2,I,DI,DV2,linestyle = '', color = 'black', marker = '.') #per vedere come sono
+##residui
+
+# switch to the residual plot
+pylab.subplot(2,1,2)
+pylab.grid()
+# build the array of the normalized residuals
+r = (I-shock(V2,*pars))/sigma
+
+# bellurie
+pylab.rc('font',size=18)
+pylab.ylabel('Norm. res.')
+pylab.minorticks_on()
+# set the vertical range for the norm res
+#pylab.ylim((-.9,.9))
+
+# plot residuals as a scatter plot with connecting dashed lines
+pylab.plot(V2,r,linestyle="--",color='blue',marker='o')
+
+
+# show the plot
+pylab.show()
