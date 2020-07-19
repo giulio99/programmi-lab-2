@@ -68,7 +68,12 @@ ndof=len(f)-2
 print('chiquadro/ndof: %f' %(chisq/ndof))
 print('frequenza di taglio: %f' %(ft))
 print('Coefficente: %f' %(a))
-
+covnorm=np.zeros((2,2))
+#covarianza normalizzata
+for i in range(2):
+    for j in range(2):
+        covnorm[i][j]=covm[i][j]/(np.sqrt(covm[i][i]*covm[j][j]))
+print('covnorm \n', covnorm)
 #Diagramma di Bode
 pylab.figure(2)
 pylab.ylabel('A [dB]')
